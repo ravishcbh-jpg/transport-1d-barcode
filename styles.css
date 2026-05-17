@@ -17,18 +17,20 @@ body {
   margin: 0;
   font-family: Arial, sans-serif;
   color: #182027;
-  background: #eef4f7;
+  background:
+    radial-gradient(circle at top left, rgba(20, 184, 166, 0.26), transparent 30%),
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.2), transparent 26%),
+    linear-gradient(180deg, #eef7fb 0%, #f8fbff 55%, #ffffff 100%);
 }
 
 header {
   padding: 22px;
-  background: #fff;
+  color: #fff;
+  background: linear-gradient(135deg, #0f766e 0%, #2563eb 58%, #7c3aed 100%);
   border-bottom: 1px solid #d7e0e8;
 }
 
-h1,
-h2,
-p {
+h1, h2, p {
   margin: 0;
 }
 
@@ -42,7 +44,7 @@ h2 {
 }
 
 .small {
-  color: #0f766e;
+  color: #b7fff4;
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
@@ -60,7 +62,19 @@ h2 {
   border: 1px solid #d7e0e8;
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 16px 38px rgba(28, 45, 64, 0.12);
+}
+
+.box:nth-child(1) {
+  border-top: 5px solid #0f766e;
+}
+
+.box:nth-child(2) {
+  border-top: 5px solid #2563eb;
+}
+
+.box:nth-child(3) {
+  border-top: 5px solid #f59e0b;
 }
 
 .sticker-box {
@@ -71,6 +85,10 @@ h2 {
   display: grid;
   gap: 12px;
   margin-bottom: 16px;
+}
+
+.compact {
+  gap: 10px;
 }
 
 form {
@@ -84,10 +102,6 @@ form {
   gap: 14px;
 }
 
-.compact {
-  gap: 10px;
-}
-
 label {
   display: grid;
   gap: 6px;
@@ -95,14 +109,18 @@ label {
   font-weight: 700;
 }
 
-input,
-textarea,
-select {
+input, textarea, select {
   width: 100%;
   padding: 11px;
   border: 1px solid #bdcad5;
   border-radius: 6px;
   font-size: 15px;
+  background: #fbfdff;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #2563eb;
+  outline: 3px solid rgba(37, 99, 235, 0.14);
 }
 
 button {
@@ -110,7 +128,7 @@ button {
   border-radius: 6px;
   padding: 12px 16px;
   color: #fff;
-  background: #0f766e;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
   font-size: 15px;
   font-weight: 800;
   cursor: pointer;
@@ -136,7 +154,8 @@ button {
   font-size: 24px;
   font-weight: 800;
   word-break: break-all;
-  background: #f8fbfc;
+  color: #0f3b63;
+  background: linear-gradient(135deg, #ecfeff, #eff6ff);
 }
 
 .label {
@@ -149,21 +168,24 @@ button {
   overflow: hidden;
   padding: var(--label-pad-y) var(--label-pad-x);
   border: 1px dashed #657786;
-  background: #fff;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
 }
 
 .label-copy {
   display: grid;
   grid-template-rows: auto 1fr auto;
   align-items: center;
+  justify-items: center;
   gap: 2mm;
   min-width: 0;
 }
 
 .label-title {
+  color: #0f766e;
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
+  text-align: center;
 }
 
 #barcode,
@@ -173,11 +195,38 @@ button {
 }
 
 .label-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
+  display: grid;
+  justify-items: center;
+  gap: 1px;
   font-size: 11px;
   font-weight: 700;
+  line-height: 1;
+  text-align: center;
+}
+
+.label-50x25 {
+  background: #fff;
+}
+
+.label-50x25 .label-copy {
+  gap: 0.8mm;
+}
+
+.label-50x25 .label-title {
+  color: #222;
+  font-size: 7px;
+  line-height: 1;
+}
+
+.label-50x25 svg {
+  width: 35mm !important;
+  height: 9mm !important;
+}
+
+.label-50x25 .label-row {
+  color: #222;
+  font-size: 6.8px;
+  font-weight: 800;
 }
 
 .circle-label .label-copy {
@@ -204,9 +253,52 @@ button {
   margin-top: 14px;
 }
 
+.details-card {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid #d7e0e8;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #fff7ed, #eff6ff);
+}
+
+.details-card h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.details-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.details-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(101, 119, 134, 0.18);
+  font-size: 14px;
+}
+
+.details-key {
+  color: #64748b;
+  font-weight: 800;
+}
+
+.details-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
+.empty-state {
+  color: #64748b;
+  font-size: 14px;
+}
+
 @media (max-width: 900px) {
-  .wrap,
-  .grid {
+  .wrap, .grid {
     grid-template-columns: 1fr;
   }
 
@@ -229,9 +321,9 @@ button {
   header,
   form,
   h2,
+  .details-card,
   .box:not(.sticker-box),
-  .actions,
-  .label-controls {
+  .actions {
     display: none !important;
   }
 
@@ -254,5 +346,9 @@ button {
   .label-copy + .label-copy {
     border-left: 1px dashed #ccc;
     padding-left: 2mm;
+  }
+
+  .label-controls {
+    display: none;
   }
 }
