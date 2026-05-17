@@ -1,5 +1,4 @@
 const form = document.getElementById("form");
-const barcode = document.getElementById("barcode");
 const scanInput = document.getElementById("scanInput");
 const scanResult = document.getElementById("scanResult");
 const clearBtn = document.getElementById("clearBtn");
@@ -7,6 +6,24 @@ const labelSize = document.getElementById("labelSize");
 const labelWidth = document.getElementById("labelWidth");
 const labelHeight = document.getElementById("labelHeight");
 const label = document.getElementById("label");
+const generatedDetails = document.getElementById("generatedDetails");
+const scanDetails = document.getElementById("scanDetails");
+
+const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbzAtbryJMLw_qqI1o-V-HEy8R2ujOMwFQpiCYE_jvTMlHY5MFZizxSN-ss2mYKgoz2F/exec";
+
+const fields = {
+  docketNo: "Docket No.",
+  date: "Date",
+  time: "Time",
+  scanStatus: "Scan Status",
+  fromPlace: "From",
+  toPlace: "To",
+  quantity: "Quantity",
+  transporter: "Transporter",
+  vehicleNo: "Vehicle No.",
+  receiver: "Receiver",
+  remarks: "Remarks"
+};
 
 const labelPresets = {
   "100x50": { width: 100, height: 50, columns: 1, shape: "rect" },
@@ -34,8 +51,70 @@ function getRecord() {
   return Object.fromEntries(new FormData(form).entries());
 }
 
+function renderDetails(target, record) {
+  target.innerHTML = "";
+
+  Object.entries(fields).forEach(([key, labelText]) => {
+    const row = document.createElement("div");
+    row.className = "details-row";
+    row.innerHTML = `<span class="details-key">${labelText}</span><span class="details-value"></span>`;
+    row.querySelector(".details-value").textContent = record[key] || "-";
+    target.appendChild(row);
+  });
+}
+
+function encodePayload(data) {
+  return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+}
+
+function jsonpRequest(params) {
+  return new Promise((resolve, reject) => {
+    const callbackName = `sheetCallback_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+    const script = document.createElement("script");
+    const url = new URL(SHEET_API_URL);
+
+    Object.entries(params).forEach(([key, value]) => {
+      url.searchParams.set(key, value);
+    });
+
+    url.searchParams.set("callback", callbackName);
+
+    window[callbackName] = (data) => {
+      delete window[callbackName];
+      script.remove();
+      resolve(data);
+    };
+
+    script.onerror = () => {
+      delete window[callbackName];
+      script.remove();
+      reject(new Error("Sheet request failed"));
+    };
+
+    script.src = url.toString();
+    document.body.appendChild(script);
+  });
+}
+
+async function saveRecordToSheet(record) {
+  await jsonpRequest({
+    action: "save",
+    docketNo: record.docketNo,
+    payload: encodePayload(record)
+  });
+}
+
+async function findRecordFromSheet(docketNo) {
+  const response = await jsonpRequest({
+    action: "get",
+    docketNo
+  });
+
+  return response && response.ok ? response.record : null;
+}
+
 function syncCopies(columns) {
-  const firstCopy = label.querySelector(".label-copy");
+  const copy = label.querySelector(".label-copy");
   const currentCopies = label.querySelectorAll(".label-copy").length;
 
   if (columns === currentCopies) return;
@@ -43,7 +122,7 @@ function syncCopies(columns) {
   label.innerHTML = "";
 
   for (let index = 0; index < columns; index++) {
-    const clone = firstCopy.cloneNode(true);
+    const clone = copy.cloneNode(true);
     clone.querySelector("svg").id = index === 0 ? "barcode" : `barcode-${index + 1}`;
     clone.querySelector("[id^='labelRoute']").id = index === 0 ? "labelRoute" : `labelRoute-${index + 1}`;
     clone.querySelector("[id^='labelQty']").id = index === 0 ? "labelQty" : `labelQty-${index + 1}`;
@@ -59,11 +138,7 @@ function updateLabelSize(width, height, columns = 1, shape = "rect") {
   const isCircle = shape === "circle";
 
   const barcodeWidth = Math.max(16, cellWidth - (isCircle ? 8 : 10));
-  const barcodeHeight = Math.max(
-    8,
-    Math.min(safeHeight * (isCircle ? 0.34 : 0.48), safeHeight - 16)
-  );
-
+  const barcodeHeight = Math.max(8, Math.min(safeHeight * (isCircle ? 0.34 : 0.48), safeHeight - 16));
   const padX = safeWidth <= 55 || isCircle ? 2.5 : 5;
   const padY = safeHeight <= 30 || isCircle ? 2 : 4;
 
@@ -98,9 +173,7 @@ function applySelectedLabelSize() {
 }
 
 function renderBarcode(record) {
-  const currentHeight =
-    parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--barcode-height")) || 24;
-
+  const currentHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--barcode-height")) || 24;
   const barcodeNodes = label.querySelectorAll("svg");
 
   barcodeNodes.forEach((node) => {
@@ -124,24 +197,50 @@ function renderBarcode(record) {
   });
 }
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const record = getRecord();
   renderBarcode(record);
+  renderDetails(generatedDetails, record);
+
+  try {
+    await saveRecordToSheet(record);
+    generatedDetails.insertAdjacentHTML(
+      "beforeend",
+      `<div class="empty-state">Google Sheet me save ho gaya.</div>`
+    );
+  } catch (error) {
+    generatedDetails.insertAdjacentHTML(
+      "beforeend",
+      `<div class="empty-state">Google Sheet me save nahi hua. Script URL/permission check karein.</div>`
+    );
+  }
 
   form.reset();
   setTodayDate();
   setCurrentTime();
 });
 
-scanInput.addEventListener("keydown", (event) => {
+scanInput.addEventListener("keydown", async (event) => {
   if (event.key !== "Enter") return;
 
   const value = scanInput.value.trim();
   scanInput.value = "";
-
   scanResult.textContent = value || "No scan value";
+
+  try {
+    const record = await findRecordFromSheet(value);
+
+    if (record) {
+      renderDetails(scanDetails, record);
+    } else {
+      scanDetails.innerHTML = `<div class="empty-state">Docket number Google Sheet me nahi mila.</div>`;
+    }
+  } catch (error) {
+    scanDetails.innerHTML = `<div class="empty-state">Google Sheet se details read nahi ho paayi. Script deployment/permission check karein.</div>`;
+  }
+
   scanInput.focus();
 });
 
@@ -159,6 +258,8 @@ clearBtn.addEventListener("click", () => {
   });
 
   scanResult.textContent = "No scan yet";
+  generatedDetails.innerHTML = `<div class="empty-state">Generate karne ke baad details yahan dikhegi.</div>`;
+  scanDetails.innerHTML = "";
   scanInput.focus();
 });
 
