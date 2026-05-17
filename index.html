@@ -16,7 +16,6 @@
   <main class="wrap">
     <section class="box">
       <h2>Transport Entry</h2>
-
       <form id="form">
         <div class="grid">
           <label>Docket No. *
@@ -79,11 +78,11 @@
       <input id="scanInput" placeholder="Scanner cursor yahan rakhein" autofocus />
       <p class="hint">Scanner se 1D barcode scan karo. Docket number yahin show hoga.</p>
       <div id="scanResult" class="scan-result">No scan yet</div>
+      <div id="scanDetails" class="details-list"></div>
     </section>
 
     <section class="box sticker-box">
       <h2>Label Preview</h2>
-
       <div class="label-controls">
         <label>Label Size
           <select id="labelSize">
@@ -98,7 +97,6 @@
             <option value="custom">Custom</option>
           </select>
         </label>
-
         <div class="grid compact">
           <label>Width mm
             <input id="labelWidth" type="number" min="30" max="150" value="100" />
@@ -111,14 +109,21 @@
 
       <article class="label" id="label">
         <div class="label-copy">
-          <div class="label-title">Transport Docket</div>
+          <div class="label-title" id="labelTitle">TRANSPORT</div>
           <svg id="barcode"></svg>
           <div class="label-row">
-            <span id="labelRoute">- to -</span>
-            <span id="labelQty">Qty: -</span>
+            <span id="labelRoute">DOCKET NO.</span>
+            <span id="labelQty">QTY: -</span>
           </div>
         </div>
       </article>
+
+      <div class="details-card">
+        <h3>Generated Details</h3>
+        <div id="generatedDetails" class="details-list">
+          <div class="empty-state">Generate karne ke baad details yahan dikhegi.</div>
+        </div>
+      </div>
 
       <div class="actions">
         <button type="button" onclick="window.print()">Print Label</button>
