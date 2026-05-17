@@ -2,14 +2,11 @@ const form = document.getElementById("form");
 const barcode = document.getElementById("barcode");
 const scanInput = document.getElementById("scanInput");
 const scanResult = document.getElementById("scanResult");
-const labelRoute = document.getElementById("labelRoute");
-const labelQty = document.getElementById("labelQty");
 const clearBtn = document.getElementById("clearBtn");
 const labelSize = document.getElementById("labelSize");
 const labelWidth = document.getElementById("labelWidth");
 const labelHeight = document.getElementById("labelHeight");
 const label = document.getElementById("label");
-const generatedDetails = document.getElementById("generatedDetails");
 const scanDetails = document.getElementById("scanDetails");
 
 const fields = {
@@ -118,7 +115,6 @@ function jsonpRequest(params) {
 }
 
 async function saveRecordToSheet(record) {
-  if (!SHEET_API_URL) return;
   await jsonpRequest({
     action: "save",
     docketNo: record.docketNo,
@@ -127,7 +123,6 @@ async function saveRecordToSheet(record) {
 }
 
 async function findRecordFromSheet(docketNo) {
-  if (!SHEET_API_URL) return null;
   const response = await jsonpRequest({
     action: "get",
     docketNo
@@ -156,8 +151,6 @@ function syncCopies(columns) {
   for (let index = 0; index < columns; index++) {
     const clone = copy.cloneNode(true);
     clone.querySelector("svg").id = index === 0 ? "barcode" : `barcode-${index + 1}`;
-    clone.querySelector("[id^='labelRoute']").id = index === 0 ? "labelRoute" : `labelRoute-${index + 1}`;
-    clone.querySelector("[id^='labelQty']").id = index === 0 ? "labelQty" : `labelQty-${index + 1}`;
     label.appendChild(clone);
   }
 }
@@ -212,19 +205,9 @@ function renderBarcode(record) {
       height: currentHeight * 3.78,
       margin: 0,
       displayValue: true,
-      fontSize: label.classList.contains("label-50x25") ? 9 : label.classList.contains("circle-label") ? 10 : 16,
-      textMargin: label.classList.contains("label-50x25") ? 1 : 4
+      fontSize: 0,
+      textMargin: 0
     });
-  });
-
-  label.querySelectorAll(".label-title").forEach((node) => {
-    node.textContent = record.transporter ? record.transporter.toUpperCase() : "TRANSPORT";
-  });
-  label.querySelectorAll("[id^='labelRoute']").forEach((node) => {
-    node.textContent = record.docketNo || "-";
-  });
-  label.querySelectorAll("[id^='labelQty']").forEach((node) => {
-    node.textContent = `QTY: ${record.quantity || "-"}`;
   });
 }
 
@@ -233,15 +216,11 @@ form.addEventListener("submit", async (event) => {
   const record = getRecord();
   renderBarcode(record);
   saveRecord(record);
-  renderDetails(generatedDetails, record);
 
   try {
     await saveRecordToSheet(record);
   } catch (error) {
-    generatedDetails.insertAdjacentHTML(
-      "beforeend",
-      `<div class="empty-state">Google Sheet me save nahi hua. Local browser me save ho gaya.</div>`
-    );
+    alert("Google Sheet me save nahi hua. Local browser me save ho gaya.");
   }
 
   form.reset();
@@ -270,14 +249,7 @@ clearBtn.addEventListener("click", () => {
   label.querySelectorAll("svg").forEach((node) => {
     node.innerHTML = "";
   });
-  label.querySelectorAll("[id^='labelRoute']").forEach((node) => {
-    node.textContent = "- to -";
-  });
-  label.querySelectorAll("[id^='labelQty']").forEach((node) => {
-    node.textContent = "Qty: -";
-  });
   scanResult.textContent = "No scan yet";
-  generatedDetails.innerHTML = `<div class="empty-state">Generate karne ke baad details yahan dikhegi.</div>`;
   scanDetails.innerHTML = "";
   scanInput.focus();
 });
