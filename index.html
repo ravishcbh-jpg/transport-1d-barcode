@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>1D Transport Barcode</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <p class="small">Main Office Transport Desk</p>
+    <h1>1D Transport Barcode Generator</h1>
+  </header>
+
+  <main class="wrap">
+    <section class="box">
+      <h2>Transport Entry</h2>
+
+      <form id="form">
+        <div class="grid">
+          <label>Docket No. *
+            <input name="docketNo" required placeholder="DKT-2026-0001" />
+          </label>
+          <label>Date *
+            <input name="date" type="date" required />
+          </label>
+        </div>
+
+        <div class="grid">
+          <label>Time *
+            <input name="time" type="time" required />
+          </label>
+          <label>Scan Status *
+            <select name="scanStatus" required>
+              <option value="Not Scanned">Not Scanned</option>
+              <option value="Scanned">Scanned</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="grid">
+          <label>From *
+            <input name="fromPlace" required placeholder="Dispatch location" />
+          </label>
+          <label>To *
+            <input name="toPlace" required placeholder="Delivery location" />
+          </label>
+        </div>
+
+        <div class="grid">
+          <label>Quantity *
+            <input name="quantity" required placeholder="25 boxes" />
+          </label>
+          <label>Transporter Name
+            <input name="transporter" placeholder="Optional" />
+          </label>
+        </div>
+
+        <div class="grid">
+          <label>Vehicle No.
+            <input name="vehicleNo" placeholder="Optional" />
+          </label>
+          <label>Receiver
+            <input name="receiver" placeholder="Optional" />
+          </label>
+        </div>
+
+        <label>Remarks
+          <textarea name="remarks" rows="3" placeholder="Optional"></textarea>
+        </label>
+
+        <button type="submit">Generate 1D Barcode</button>
+      </form>
+    </section>
+
+    <section class="box">
+      <h2>Office Scan Mode</h2>
+      <input id="scanInput" placeholder="Scanner cursor yahan rakhein" autofocus />
+      <p class="hint">Scanner se 1D barcode scan karo. Docket number yahin show hoga.</p>
+      <div id="scanResult" class="scan-result">No scan yet</div>
+    </section>
+
+    <section class="box sticker-box">
+      <h2>Label Preview</h2>
+
+      <div class="label-controls">
+        <label>Label Size
+          <select id="labelSize">
+            <option value="100x50">100 x 50 mm</option>
+            <option value="75x50">75 x 50 mm</option>
+            <option value="50x25">50 x 25 mm</option>
+            <option value="50x25-2up">50 x 25 mm - 2 Up</option>
+            <option value="100x75">100 x 75 mm</option>
+            <option value="circle-25">1 inch Circle</option>
+            <option value="circle-38">38 mm Circle</option>
+            <option value="circle-50">50 mm Circle</option>
+            <option value="custom">Custom</option>
+          </select>
+        </label>
+
+        <div class="grid compact">
+          <label>Width mm
+            <input id="labelWidth" type="number" min="30" max="150" value="100" />
+          </label>
+          <label>Height mm
+            <input id="labelHeight" type="number" min="20" max="100" value="50" />
+          </label>
+        </div>
+      </div>
+
+      <article class="label" id="label">
+        <div class="label-copy">
+          <div class="label-title">Transport Docket</div>
+          <svg id="barcode"></svg>
+          <div class="label-row">
+            <span id="labelRoute">- to -</span>
+            <span id="labelQty">Qty: -</span>
+          </div>
+        </div>
+      </article>
+
+      <div class="actions">
+        <button type="button" onclick="window.print()">Print Label</button>
+        <button type="button" class="secondary" id="clearBtn">Clear</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
